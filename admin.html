@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>관리자 | INFINITY Program</title>
+  <!-- 관리자 전용 화면: 검색엔진에 나오지 않게, 메인 화면 어디에도 링크하지 않음 (주소를 즐겨찾기해서 사용) -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#06182f">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="admin-page">
+
+  <header class="site-header">
+    <a href="index.html"><img src="images/photos/logo-infinity.webp" alt="INFINITY Program 홈으로" class="logo"></a>
+    <div class="adm-header-right">
+      <span class="adm-badge">관리자</span>
+      <button type="button" id="adm-logout" class="btn btn-outline adm-small" hidden>로그아웃</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== 1. 로그인 ===== -->
+    <section id="adm-login" class="my-section">
+      <span class="eyebrow">ADMIN</span>
+      <h2>관리자 로그인</h2>
+      <p>신청 목록 확인, 답변 작성, 알림 이메일 설정을 할 수 있어요.</p>
+
+      <!-- 동작은 js/admin.js (10단계) -->
+      <form id="login-form" class="card form-card" novalidate>
+        <label>관리자 비밀번호
+          <input type="password" name="password" autocomplete="current-password" required class="adm-password">
+        </label>
+        <button type="submit" class="btn btn-navy btn-block">로그인</button>
+        <p id="login-status" class="form-status" role="status" aria-live="polite" hidden></p>
+        <p class="note" style="margin:12px 0 0">🔒 10번 틀리면 30분 동안 잠기고, 알림 이메일로 경고가 갑니다.</p>
+      </form>
+    </section>
+
+    <!-- ===== 2. 관리 화면 (로그인하면 나타남) ===== -->
+    <section id="adm-main" class="adm-main" hidden>
+      <div class="adm-tabs" role="tablist">
+        <button type="button" role="tab" id="tabbtn-list" aria-controls="tab-list" aria-selected="true">📋 신청 목록</button>
+        <button type="button" role="tab" id="tabbtn-settings" aria-controls="tab-settings" aria-selected="false">⚙️ 알림·설정</button>
+      </div>
+
+      <!-- 2-1. 신청 목록 -->
+      <div id="tab-list" role="tabpanel" aria-labelledby="tabbtn-list">
+        <div class="adm-toolbar">
+          <label class="sr-only" for="adm-search">검색</label>
+          <input type="search" id="adm-search" class="adm-search" placeholder="이름·연락처·이메일·신청번호 검색" autocomplete="off">
+          <button type="button" id="adm-refresh" class="btn btn-outline adm-small" title="새로 들어온 신청 불러오기">↻ 새로고침</button>
+        </div>
+        <div id="adm-filters" class="adm-filters" aria-label="상태별 보기"></div>
+        <p id="adm-meta" class="note adm-meta"></p>
+
+        <!-- 신청 카드들이 여기에 들어갑니다 (누르면 펼쳐짐) -->
+        <div id="adm-list"></div>
+        <p id="adm-empty" class="adm-empty" hidden>조건에 맞는 신청이 없습니다.</p>
+        <button type="button" id="adm-more" class="btn btn-outline btn-block" hidden>더 보기</button>
+      </div>
+
+      <!-- 2-2. 알림·설정 -->
+      <div id="tab-settings" role="tabpanel" aria-labelledby="tabbtn-settings" hidden>
+        <form id="settings-form" class="card" novalidate>
+          <h3>🔔 알림 받을 이메일</h3>
+          <p class="note">새 상담 신청이나 신청자의 추가 질문이 오면 여기 적힌 <b>모든 주소</b>로 메일이 갑니다.<br>
+            여러 명이면 <b>쉼표(,)</b>로 구분해 주세요. 신청자가 받는 메일의 "답장" 주소는 맨 앞 주소예요.</p>
+          <label>이메일 목록
+            <textarea name="emails" rows="3" placeholder="boss@gmail.com, staff@gmail.com" autocapitalize="off" spellcheck="false"></textarea>
+          </label>
+          <div id="email-chips" class="adm-chips" aria-live="polite"></div>
+
+          <h3>✉️ 신청자 접수 확인 메일</h3>
+          <label class="agree">
+            <input type="checkbox" name="confirmMail">
+            <span>신청하면 신청자에게 "접수되었습니다" 메일 보내기</span>
+          </label>
+
+          <h3>🏷️ 진행 상태 목록</h3>
+          <p class="note">신청 카드에서 고를 수 있는 상태예요. 쉼표(,)로 구분합니다.<br>
+            <b>신규</b>는 새 신청에 자동으로 붙는 상태라 항상 들어갑니다. 이름을 바꿔도 이미 저장된 신청의 상태는 예전 이름 그대로 남아요.<br>
+            신청자 화면에는 <b>등록·완료·합격</b>이 들어간 상태는 초록색, <b>보류·취소</b>는 회색, 나머지는 노란색으로 보여요.</p>
+          <label>상태 목록
+            <input type="text" name="statuses" autocomplete="off">
+          </label>
+          <div id="status-chips" class="adm-chips"></div>
+
+          <button type="submit" class="btn btn-navy btn-block">설정 저장</button>
+          <p id="settings-status" class="form-status" role="status" aria-live="polite" hidden></p>
+        </form>
+
+        <div class="callout">
+          <p>📊 모든 신청은 구글 시트에도 그대로 있어요. 엑셀처럼 한꺼번에 보거나 고칠 때는 시트를 여세요.<br>
+            <a id="sheet-link" href="#" target="_blank" rel="noopener">구글 시트 열기</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/config.js" defer></script>
+  <script src="js/api.js" defer></script>
+  <script src="js/admin.js" defer></script>
+</body>
+</html>
