@@ -47,13 +47,13 @@
   }
 
   document.querySelectorAll('[data-copy]').forEach((btn) => {
-    const label = btn.textContent;
     btn.addEventListener('click', () => {
+      const label = btn.textContent;   // 언어가 바뀌어도 맞는 글자로 되돌아가게
       const text = btn.dataset.copy;
       copyText(text)
         .then(() => {
-          showToast(btn.dataset.copyMsg || '복사했어요.');
-          btn.textContent = '✓ 복사됨';
+          showToast(btn.dataset.copyMsg || T('ui.copied'));
+          btn.textContent = T('ui.copiedBtn');
           btn.classList.add('is-copied');
           setTimeout(() => {
             btn.textContent = label;
@@ -62,7 +62,7 @@
         })
         .catch(() => {
           // 복사가 끝내 안 되면 직접 보고 적을 수 있게 알려 줍니다.
-          showToast('복사가 안 되는 환경이에요. 직접 입력해 주세요: ' + text);
+          showToast(T('ui.copyFail', { text: text }));
         });
     });
   });
@@ -72,7 +72,7 @@
   const dialogImg = dialog && dialog.querySelector('img');
   const dialogTitle = dialog && dialog.querySelector('h4');
   const dialogNote = dialog && dialog.querySelector('.note');
-  const defaultNote = dialogNote ? dialogNote.textContent : '';
+  function defaultNote() { return dialogNote ? dialogNote.textContent : ''; }
 
   function openQr(src, title, note) {
     if (!dialog || typeof dialog.showModal !== 'function') {
@@ -82,7 +82,7 @@
     dialogImg.src = src;
     dialogImg.alt = title;
     dialogTitle.textContent = title;
-    dialogNote.textContent = note || defaultNote;
+    dialogNote.textContent = note || defaultNote();
     dialog.showModal();
   }
 
@@ -108,7 +108,7 @@
     link.addEventListener('click', (e) => {
       if (!isIOS && !isInApp) return; // 안드로이드 크롬·PC는 그대로 다운로드
       e.preventDefault();
-      openQr(link.getAttribute('href'), '위챗 QR 코드', 'QR 이미지를 길게 눌러 "사진에 저장"을 선택해 주세요.');
+      openQr(link.getAttribute('href'), T('ctc.wc.qr'), T('ui.saveHint'));
     });
   });
 })();

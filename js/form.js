@@ -24,33 +24,33 @@
   const rules = {
     name(value) {
       const v = value.trim();
-      if (!v) return '성명을 입력해 주세요.';
-      if (v.length < 2) return '성명을 2글자 이상 입력해 주세요.';
-      if (/[0-9]/.test(v)) return '성명에는 숫자를 넣을 수 없습니다.';
+      if (!v) return T('msg.name.empty');
+      if (v.length < 2) return T('msg.name.short');
+      if (/[0-9]/.test(v)) return T('msg.name.digit');
       return '';
     },
     phone(value) {
       const v = value.trim();
       const digits = v.replace(/\D/g, '');
-      if (!v) return '연락처를 입력해 주세요.';
+      if (!v) return T('msg.phone.empty');
       if (v.startsWith('+')) {
         // 해외 번호: +국가번호 포함 숫자 8~15개
-        if (digits.length < 8 || digits.length > 15) return '해외 번호를 국가번호부터 정확히 입력해 주세요. (예: +60 11-1234-5678)';
+        if (digits.length < 8 || digits.length > 15) return T('msg.phone.intl');
         return '';
       }
       // 한국 휴대폰: 010·011·016·017·018·019로 시작, 숫자 10~11개
-      if (!/^01[016789]\d{7,8}$/.test(digits)) return '휴대폰 번호를 정확히 입력해 주세요. (예: 010-1234-5678)';
+      if (!/^01[016789]\d{7,8}$/.test(digits)) return T('msg.phone.kr');
       return '';
     },
     email(value) {
       const v = value.trim();
-      if (!v) return '이메일을 입력해 주세요.';
-      if (/\s/.test(v)) return '이메일에 띄어쓰기가 들어 있습니다.';
-      if (!/^[^@]+@[^@]+\.[a-z]{2,}$/i.test(v)) return '이메일 주소 형식이 올바르지 않습니다. (예: example@gmail.com)';
+      if (!v) return T('msg.email.empty');
+      if (/\s/.test(v)) return T('msg.email.space');
+      if (!/^[^@]+@[^@]+\.[a-z]{2,}$/i.test(v)) return T('msg.email.form');
       return '';
     },
     agree(_, input) {
-      return input.checked ? '' : '개인정보 수집·이용에 동의해 주셔야 신청할 수 있습니다.';
+      return input.checked ? '' : T('msg.agree');
     },
   };
 
@@ -115,10 +115,10 @@
     const p = document.createElement('p');
     p.id = 'email-suggest';
     p.className = 'field-suggest';
-    p.textContent = '혹시 ' + suggestion + ' 인가요? ';
+    p.textContent = T('msg.emailTypo', { addr: suggestion });
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = '이걸로 고치기';
+    btn.textContent = T('msg.emailFix');
     btn.addEventListener('click', () => {
       input.value = suggestion;
       p.remove();
@@ -175,7 +175,7 @@
     suggestEmail();
 
     if (bad.length) {
-      showStatus('error', '빨간색으로 표시된 ' + bad.length + '개 항목을 확인해 주세요.');
+      showStatus('error', T('msg.badFields', { n: bad.length }));
       fields[bad[0]].focus();
       fields[bad[0]].scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
@@ -197,24 +197,23 @@
     // 두 번 눌러서 두 번 접수되는 것을 막기
     submitBtn.disabled = true;
     const label = submitBtn.textContent;
-    submitBtn.textContent = '보내는 중…';
+    submitBtn.textContent = T('msg.sending');
 
     try {
       const result = await sendApplication(data);
-      showStatus('success', '✅ 신청이 접수되었습니다. 담당자가 곧 연락드리겠습니다.',
-        '신청번호 ' + result.id + (result.confirmSent ? ' · 입력하신 이메일로 접수 확인 메일을 보내 드렸어요.' : ''));
+      showStatus('success', T('msg.ok'),
+        T('msg.okId', { id: result.id }) + (result.confirmSent ? T('msg.okMail') : ''));
       // 진행 상황·담당자 답변은 "내 신청 확인" 화면에서 볼 수 있다고 안내 (9단계)
       const link = document.createElement('a');
       link.href = 'mypage.html';
-      link.textContent = '내 신청 확인하기 →';
+      link.textContent = T('msg.mypage');
       status.appendChild(link);
       form.reset();
       form.querySelectorAll('.is-valid').forEach((el) => el.classList.remove('is-valid'));
       Object.keys(touched).forEach((k) => delete touched[k]);
     } catch (err) {
       console.error('[신청 전송 실패]', err);
-      showStatus('error', err.userMessage ||
-        '전송 중 문제가 생겼습니다. 잠시 후 다시 시도하시거나 카카오톡으로 문의해 주세요.');
+      showStatus('error', err.userMessage || T('msg.fail'));
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = label;
@@ -233,7 +232,7 @@
     const utm = new URLSearchParams(location.search).get('utm_source');
     if (utm) return utm;
     try {
-      return document.referrer ? new URL(document.referrer).hostname : '직접 방문';
+      return document.referrer ? new URL(document.referrer).hostname : T('msg.direct');
     } catch (_) {
       return '';
     }

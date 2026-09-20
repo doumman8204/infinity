@@ -1284,3 +1284,132 @@ footer a { color: #fff; font-weight: 700; }
   .btn { transition: none; }
   .hero > *:not(.hero-bg) { animation: none; }
 }
+
+/* ---------- 24. 언어 전환 국기 버튼 (12단계) ---------- */
+.lang-switch {
+  display: flex;
+  gap: 5px;
+  margin-left: auto;   /* 로고와 최대한 떨어뜨려 오른쪽에 붙입니다 */
+  margin-right: 8px;
+}
+.lang-switch button {
+  width: 30px;
+  height: 21px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+  cursor: pointer;
+  opacity: 0.5;                 /* 고르지 않은 국기는 흐리게 */
+  transition: opacity 0.15s, box-shadow 0.15s;
+}
+.lang-switch button:hover { opacity: 0.85; }
+.lang-switch button[aria-current="true"] {
+  opacity: 1;
+  border-color: var(--gold-400);
+  box-shadow: 0 0 0 2px var(--gold-400);   /* 지금 보고 있는 언어 표시 */
+}
+.lang-switch svg { display: block; width: 100%; height: 100%; }
+
+/* 화면이 아주 좁을 때(구형 소형폰) 국기를 조금 줄입니다 */
+@media (max-width: 359px) {
+  .lang-switch { gap: 3px; margin-right: 6px; }
+  .lang-switch button { width: 26px; height: 18px; }
+  .site-header .header-cta { padding: 6px 10px; font-size: 0.84rem; }
+}
+
+/* 한국어가 아닐 때는 상담 버튼을 카카오(노랑) 대신 해당 메신저 색으로 */
+html[lang="en"] .btn-kakao      { background: #25D366; color: #fff; }  /* WhatsApp */
+html[lang="zh-Hans"] .btn-kakao { background: #07C160; color: #fff; }  /* WeChat */
+
+/* ---------- 25. 외화 환산 금액 · 환율 안내 (12단계) ---------- */
+/* 원화 금액 아래에 작게 붙는 "≈ US$6,921" / "≈ 46,602元" */
+.fx {
+  display: block;
+  margin-top: 2px;
+  font-style: normal;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.price-list li span:last-child,
+.price .fx,
+.finder-price .fx { text-align: right; }
+.price .fx,
+.finder-price .fx { font-size: 0.82rem; }
+/* 표 안에서는 줄이 바뀌어도 되게 */
+td .fx { white-space: normal; }
+
+/* 환율 안내문: 한국어 화면에서는 비어 있으므로 아예 보이지 않게 */
+.fx-note { margin-top: 10px; font-size: 0.82rem; line-height: 1.5; }
+.fx-note:empty { display: none; }
+
+/* 영어·중국어는 항목 이름이 길어질 수 있으므로, 가격 줄이 밀려나지 않게 */
+.price-list li > span:first-child { min-width: 0; }
+.price-list .gov-tag { white-space: normal; }
+
+/* ---------- 26. 사진 안에 박힌 글자를 번역 글자로 덮기 (12단계) ----------
+   사진 파일을 고치지 않고, 원래 글자가 있던 자리에 같은 색·같은 크기의
+   글자를 얹습니다. 위치는 % 로 잡아서 화면이 커져도 따라갑니다.
+   cqw = "이 사진 폭의 1%" (사진이 커지면 글자도 같이 커집니다) */
+.img-overlay {
+  position: relative;
+  container-type: inline-size;
+  margin: 16px 0;
+}
+.img-overlay .figure { margin: 0; display: block; }
+
+.img-cap {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;      /* 글자가 사진 위를 덮어도 클릭을 막지 않게 */
+}
+
+/* (1) 파트너사 그림 — 원래 글자: 금색 기울임꼴 "35개사 크루즈 취업가능"
+   이 그림은 배경이 투명해서 뒤의 흰색(.figure 배경)이 비칩니다.
+   그래서 흰색 상자로 덮으면 이어붙인 자국이 전혀 남지 않습니다. */
+.cap-partners {
+  left: 1.4%;
+  top: 69.2%;
+  width: 47%;
+  height: 10.8%;
+  padding-left: 1%;
+  background: #fff;
+  color: #f3c11f;
+  font-style: italic;
+  font-weight: 800;
+  font-size: 4.5cqw;      /* 원본 글자 폭(사진의 42.5%)에 맞춘 크기 */
+  letter-spacing: -0.01em;
+}
+html[lang="en"]      .cap-partners { font-size: 4cqw; }
+html[lang="zh-Hans"] .cap-partners { font-size: 3.7cqw; }
+
+/* (2) 지도 그림 — 원래 글자: 연두색 상자 안 "도보 5분"
+   지도 위라서 같은 연두색 상자를 그려서 덮습니다. */
+.cap-map {
+  left: 53.7%;
+  top: 51.2%;
+  height: 7.2%;
+  min-width: 11.9%;
+  padding: 0 1%;
+  justify-content: center;
+  background: #9cfd37;
+  border-radius: 0.6cqw;
+  color: #111;
+  font-weight: 700;
+  font-size: 3.5cqw;
+}
+html[lang="en"]      .cap-map { font-size: 3cqw; }
+html[lang="zh-Hans"] .cap-map { font-size: 3.2cqw; }
+
+/* 아주 오래된 브라우저가 cqw 를 모르면 글자가 너무 작아지므로, 그때는 숨깁니다
+   (원래 사진의 한글이 그대로 보입니다 → 화면이 깨지지 않음) */
+@supports not (width: 1cqw) {
+  .img-cap { display: none; }
+}

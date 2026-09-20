@@ -21,11 +21,11 @@
 
   // 시트의 "상태" 칸 값 → 신청자에게 보여 줄 말과 색
   const STATUS = {
-    '신규': { text: '접수 완료 · 담당자 확인 전', tone: 'new' },
+    '신규': { key: 'my.new', tone: 'new' },
   };
   // 색 규칙은 관리자 화면(admin.js)과 같음: 보류·취소 회색 / 완료·등록·합격 초록 / 나머지 노랑
   function statusView(value) {
-    if (STATUS[value]) return STATUS[value];
+    if (STATUS[value]) return { text: T(STATUS[value].key), tone: STATUS[value].tone };
     if (/보류|취소/.test(value)) return { text: value, tone: 'stop' };
     if (/완료|등록|합격/.test(value)) return { text: value, tone: 'done' };
     return { text: value, tone: 'doing' };
@@ -46,18 +46,19 @@
     const phone4 = form.elements.phone4.value.trim();
 
     if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)) {
-      showStatus('error', '이메일 주소를 정확히 입력해 주세요.');
+      showStatus('error', T('my.email.bad'));
       form.elements.email.focus();
       return;
     }
     if (!/^\d{4}$/.test(phone4)) {
-      showStatus('error', '연락처 뒷자리 숫자 4개를 입력해 주세요.');
+      showStatus('error', T('my.phone4.bad'));
       form.elements.phone4.focus();
       return;
     }
 
     submitBtn.disabled = true;
-    submitBtn.textContent = '확인 중…';
+    const lookupLabel = submitBtn.textContent;
+    submitBtn.textContent = T('my.checking');
     try {
       const result = await window.INFINITY.post('lookup', { email: email, phone4: phone4 });
       token = result.token;
@@ -66,16 +67,16 @@
       showResult(result.items);
     } catch (err) {
       console.error('[조회 실패]', err);
-      showStatus('error', err.userMessage || '연결에 문제가 생겼습니다. 잠시 후 다시 시도하시거나 카카오톡으로 문의해 주세요.');
+      showStatus('error', err.userMessage || T('my.lookupFail'));
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = '조회하기';
+      submitBtn.textContent = lookupLabel;
     }
   });
 
   /* ---------- 3. 결과 화면 ---------- */
   function showResult(items) {
-    title.textContent = items.length > 1 ? '내 신청 내역 (' + items.length + '건)' : '내 신청 내역';
+    title.textContent = items.length > 1 ? T('my.titleN', { n: items.length }) : T('my.title');
     list.replaceChildren(...items.map(renderCard));
     lookupSection.hidden = true;
     resultSection.hidden = false;
@@ -105,17 +106,17 @@
     const st = statusView(item.status);
     head.append(el('span', 'my-status is-' + st.tone, st.text));
     card.append(head);
-    card.append(el('p', 'my-date', item.date + ' 신청'));
+    card.append(el('p', 'my-date', T('my.applied', { date: item.date })));
 
     // 신청 내용 (가려진 개인정보)
     const info = el('dl', 'my-info');
     [
-      ['성명', item.name],
-      ['연락처', item.phone],
-      ['이메일', item.email],
-      ['관심 프로그램', item.program],
-      ['영어 회화', item.englishLevel],
-      ['가능 언어', item.languages],
+      [T('my.f.name'), item.name],
+      [T('my.f.phone'), item.phone],
+      [T('my.f.email'), item.email],
+      [T('my.f.program'), item.program],
+      [T('my.f.english'), item.englishLevel],
+      [T('my.f.langs'), item.languages],
     ].forEach(([label, value]) => {
       if (!value) return;
       info.append(el('dt', '', label), el('dd', '', value));
@@ -124,15 +125,14 @@
 
     // 담당자 답변
     const reply = el('div', 'my-reply' + (item.reply ? '' : ' is-empty'));
-    reply.append(el('h4', '', '💬 담당자 답변'));
-    reply.append(el('p', '', item.reply ||
-      '아직 답변이 없습니다. 담당자가 확인 후 연락드리거나 여기에 답변을 남겨 드려요.'));
+    reply.append(el('h4', '', T('my.reply')));
+    reply.append(el('p', '', item.reply || T('my.reply.none')));
     card.append(reply);
 
     // 내가 보낸 추가 질문
     if (item.questions.length) {
       const box = el('div', 'my-questions');
-      box.append(el('h4', '', '내가 보낸 추가 질문'));
+      box.append(el('h4', '', T('my.q.mine')));
       const ul = el('ul');
       item.questions.forEach((q) => {
         const li = el('li');
@@ -152,15 +152,15 @@
   function askForm(id) {
     const f = el('form', 'ask-form');
     f.noValidate = true;
-    const label = el('label', '', '추가로 궁금한 점이 있나요?');
+    const label = el('label', '', T('my.q.label'));
     const box = el('textarea');
     box.name = 'question';
     box.rows = 3;
     box.maxLength = QUESTION_MAX;
-    box.placeholder = '예) 10월 출국도 가능한가요?';
+    box.placeholder = T('my.q.ph');
     label.append(box);
     const counter = el('small', 'ask-count', '0 / ' + QUESTION_MAX);
-    const btn = el('button', 'btn btn-navy btn-block', '질문 보내기');
+    const btn = el('button', 'btn btn-navy btn-block', T('my.q.send'));
     btn.type = 'submit';
     const msg = el('p', 'form-status');
     msg.hidden = true;
@@ -176,28 +176,27 @@
       event.preventDefault();
       const question = box.value.trim();
       if (question.length < 2) {
-        setMsg(msg, 'error', '질문 내용을 2글자 이상 입력해 주세요.');
+        setMsg(msg, 'error', T('my.q.short'));
         box.focus();
         return;
       }
       btn.disabled = true;
-      btn.textContent = '보내는 중…';
+      btn.textContent = T('my.q.sending');
       try {
         const result = await window.INFINITY.post('ask', { token: token, id: id, question: question });
         // 저장된 최신 내용으로 카드를 새로 그림
         const fresh = renderCard(result.item);
         f.closest('.my-app').replaceWith(fresh);
-        setMsg(fresh.querySelector('.ask-form .form-status'), 'success',
-          '✅ 질문을 보냈습니다. 담당자가 확인 후 답변드릴게요.');
+        setMsg(fresh.querySelector('.ask-form .form-status'), 'success', T('my.q.ok'));
       } catch (err) {
         console.error('[질문 전송 실패]', err);
         if (err.result && err.result.expired) {
           backToLookup(err.userMessage);
           return;
         }
-        setMsg(msg, 'error', err.userMessage || '전송 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요.');
+        setMsg(msg, 'error', err.userMessage || T('my.q.fail'));
         btn.disabled = false;
-        btn.textContent = '질문 보내기';
+        btn.textContent = T('my.q.send');
       }
     });
     return f;

@@ -15,31 +15,16 @@
   /* ---------- 1. 추천 결과 내용 ----------
      option: 신청서 "관심 프로그램" 칸의 글자와 똑같아야 자동 선택됩니다. */
   const programs = {
-    a: {
-      title: 'A. 크루즈 면접',
-      price: '100만원',
-      reason: '영어 회화와 호텔 경력을 모두 갖추셨네요! 바로 크루즈 면접에 도전하시면 됩니다.',
-      option: '크루즈 면접',
-    },
-    b: {
-      title: 'B. 인턴십(6개월) + 크루즈 면접',
-      price: '520만원',
-      reason: '영어는 준비되셨으니, 5성급 호텔 유급 인턴십으로 경력 1년을 인정받고 면접을 보시면 됩니다.',
-      option: '인턴십(6개월) + 크루즈 면접',
-    },
-    c: {
-      title: 'C. 영어연수(12주) + 크루즈 면접',
-      price: '525만원',
-      reason: '호텔 경력은 충분하니, 12주 영어연수로 면접 영어만 준비하시면 됩니다.',
-      option: '영어연수(12주) + 크루즈 면접',
-    },
-    d: {
-      title: 'D. 영어연수(12주) + 인턴십(6개월) + 크루즈 면접',
-      price: '960만원',
-      reason: '괜찮습니다. 처음 시작하는 분이 가장 많이 선택하는 과정입니다. 영어와 경력을 한 번에 채워 드립니다.',
-      option: '영어연수(12주) + 인턴십(6개월) + 크루즈 면접',
-    },
+    a: { option: '크루즈 면접' },
+    b: { option: '인턴십(6개월) + 크루즈 면접' },
+    c: { option: '영어연수(12주) + 크루즈 면접' },
+    d: { option: '영어연수(12주) + 인턴십(6개월) + 크루즈 면접' },
   };
+  // option 은 신청서 "관심 프로그램" 칸의 value 와 똑같아야 자동 선택됩니다.
+  // (value 는 화면 언어와 상관없이 항상 한국어 → 관리자 시트에도 한국어로 저장됩니다)
+  // 제목·추천 이유·가격 같은 "보이는 글자"는 js/lang-*.js 사전에서 가져옵니다. (12단계)
+
+  let last = null;   // 지금 보여 주고 있는 추천 결과 (언어를 바꾸면 다시 그리기 위해)
 
   function pick(english, career) {
     if (english === 'yes') return career === 'yes' ? 'a' : 'b';
@@ -55,35 +40,43 @@
     // 한 질문에만 답했을 때: 남은 질문 안내
     if (!english || !career) {
       result.className = '';
-      result.textContent = !english ? '👆 Q1에도 답해 주세요.' : '👇 Q2에도 답해 주세요.';
+      last = null;
+      result.textContent = !english ? T('fd.need1') : T('fd.need2');
       return;
     }
 
     const key = pick(english.value, career.value);
-    showResult(key, career.value === 'no');
+    last = { key: key, birmingham: career.value === 'no' };
+    showResult(last.key, last.birmingham);
   });
 
-  function showResult(key, showBirmingham) {
-    const p = programs[key];
+  // 국기를 눌러 언어를 바꾸면 추천 결과도 그 언어로 다시 그립니다
+  document.addEventListener('i18n:change', () => {
+    if (last) showResult(last.key, last.birmingham, true);   // true = 화면을 움직이지 않음
+  });
+
+  function showResult(key, showBirmingham, keepScroll) {
     result.className = 'is-done';
     result.innerHTML = `
-      <span class="finder-badge">🎯 추천 프로그램</span>
-      <h3 class="finder-title">${p.title}</h3>
-      <p class="finder-reason">${p.reason}</p>
-      <p class="finder-price"><small>총</small>${p.price}</p>
+      <span class="finder-badge">${T('fd.badge')}</span>
+      <h3 class="finder-title">${T('fd.' + key + '.title')}</h3>
+      <p class="finder-reason">${T('fd.' + key + '.reason')}</p>
+      <p class="finder-price"><small>${T('fd.total')}</small>${T('fd.' + key + '.price')}</p>
+      <p class="note fx-note">${T('fx.note')}</p>
       <div class="finder-actions">
-        <a href="#apply" class="btn btn-primary btn-block" data-apply="${key}">📝 이 프로그램으로 상담 신청</a>
-        <a href="#program-${key}" class="btn btn-outline btn-block" data-detail="${key}">가격 자세히 보기</a>
+        <a href="#apply" class="btn btn-primary btn-block" data-apply="${key}">${T('fd.apply')}</a>
+        <a href="#program-${key}" class="btn btn-outline btn-block" data-detail="${key}">${T('fd.detail')}</a>
       </div>
       ${showBirmingham ? `
       <a href="#birmingham" class="finder-extra">
-        <b>🎓 영국 대학 졸업장도 함께 받고 싶다면?</b>
-        E. 버밍험 Diploma (12개월, 인턴십 포함) 보기 →
+        <b>${T('fd.extra1')}</b>
+        ${T('fd.extra2')}
       </a>` : ''}
-      <button type="button" class="finder-reset">↺ 다시 하기</button>
+      <button type="button" class="finder-reset">${T('fd.reset')}</button>
     `;
     // 결과가 화면 아래로 가려져 있으면 보이는 곳까지 살짝 내려 주기
-    result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // (언어만 바꾼 경우에는 화면을 움직이지 않습니다)
+    if (!keepScroll) result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   /* ---------- 3. 결과 안의 버튼 동작 ---------- */
@@ -109,8 +102,9 @@
     if (resetBtn) {
       section.querySelectorAll('input[type="radio"]').forEach((r) => { r.checked = false; });
       document.querySelectorAll('.program.is-picked').forEach((el) => el.classList.remove('is-picked'));
+      last = null;
       result.className = '';
-      result.textContent = '두 질문에 모두 답하면 추천 결과가 나타납니다.';
+      result.textContent = T('fd.empty');
       section.querySelector('fieldset').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   });
