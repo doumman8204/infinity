@@ -758,6 +758,7 @@ legend { padding: 0 6px; font-weight: 700; color: var(--navy-900); }
 
 /* ---------- 13. 연락처 ---------- */
 .phone-list { list-style: none; padding: 0; display: grid; gap: 8px; }
+.section-heading-note { font-size: 0.65em; font-weight: 400; color: var(--muted); white-space: nowrap; }
 .phone-list li { margin: 0; }
 .phone-list a {
   display: flex;
@@ -773,6 +774,12 @@ legend { padding: 0 6px; font-weight: 700; color: var(--navy-900); }
 }
 
 .messenger-grid { display: grid; gap: 12px; }
+.language-contact { margin-top: 20px; }
+.language-contact > h3 { padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.language-contact .messenger { min-width: 0; }
+@media (min-width: 900px) {
+  .language-contact .messenger-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .messenger {
   display: grid;
   grid-template-columns: 96px 1fr;

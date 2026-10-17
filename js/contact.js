@@ -108,7 +108,7 @@
     link.addEventListener('click', (e) => {
       if (!isIOS && !isInApp) return; // 안드로이드 크롬·PC는 그대로 다운로드
       e.preventDefault();
-      openQr(link.getAttribute('href'), T('ctc.wc.qr'), T('ui.saveHint'));
+      openQr(link.getAttribute('href'), link.dataset.qrTitle || T('ctc.qr.title'), T('ui.saveHint'));
     });
   });
 })();
