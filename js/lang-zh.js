@@ -294,7 +294,7 @@ window.INFINITY_TEXT.zh = {
   'ctc.mail': '电子邮箱',
   'ctc.mail2': '✉️ 电子邮箱',
   'ctc.msg' : '即时通讯',
-  'ctc.agent.ko': '韩语负责人',
+  'ctc.agent.ko': '韩语负责人（010-4374-8204）',
   'ctc.agent.enZh': '英语·中文负责人',
   'ctc.msg.note': '用手机浏览时请直接点击按钮；用电脑浏览时请点击二维码放大，再用手机扫描。（请在对应的应用中扫描二维码。）',
   'ctc.kakao'       : 'KakaoTalk',
