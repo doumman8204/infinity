@@ -296,7 +296,7 @@ window.INFINITY_TEXT.en = {
   'ctc.mail2': '✉️ Email',
   'ctc.msg' : 'Messengers',
   'ctc.agent.ko': 'Korean-speaking contact (010-4374-8204)',
-  'ctc.agent.enZh': 'English- and Chinese-speaking contact',
+  'ctc.agent.enZh': 'English- and Chinese-speaking contact (+60 16-543-2445)',
   'ctc.msg.note': 'On a phone, just tap the button. On a computer, tap the QR code to enlarge it and scan it with your phone. (Scan the QR code from within the relevant app.)',
   'ctc.kakao'       : 'KakaoTalk',
   'ctc.kakao.qr'    : 'KakaoTalk QR code',
